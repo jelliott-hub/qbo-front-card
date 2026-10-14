@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuickBooks</title>
+<style>
+:root {
+  --bg: #ffffff; --panel: #f6f7f9; --line: #e3e6ea; --text: #1f2328; --muted: #656d76;
+  --green: #1a7f37; --green-bg: #e6f4ea; --red: #b42318; --red-bg: #fdecea;
+  --amber: #8a5a00; --amber-bg: #fff4d6; --blue: #0b5cad; --blue-bg: #e8f1fb;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #1d1f23; --panel: #26292e; --line: #363a40; --text: #e6e8eb; --muted: #9aa3ad;
+    --green: #6cc287; --green-bg: #1e3326; --red: #f2837a; --red-bg: #3a2220;
+    --amber: #e8b75a; --amber-bg: #3a2f17; --blue: #7fb2ec; --blue-bg: #1c2b3d; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.45 -apple-system, "Segoe UI", system-ui, sans-serif; }
+header { display: flex; align-items: center; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--bg); }
+header b { font-weight: 600; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+.muted { color: var(--muted); }
+.small { font-size: 11.5px; }
+main { padding: 10px 12px 16px; }
+h2 { font-size: 14px; margin: 0; font-weight: 600; }
+h3 { font-size: 11.5px; font-weight: 600; color: var(--muted); margin: 0 0 4px; }
+section { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.chip { padding: 1px 7px; border-radius: 10px; font-size: 11.5px; background: var(--panel); color: var(--muted); }
+.chip.good { background: var(--green-bg); color: var(--green); }
+.chip.bad { background: var(--red-bg); color: var(--red); }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+.tile { background: var(--panel); border-radius: 8px; padding: 6px 8px; }
+.tile .v { font-size: 16px; font-weight: 600; }
+.bad-text { color: var(--red); }
+.warn { background: var(--amber-bg); color: var(--amber); border-radius: 8px; padding: 6px 8px; margin-top: 8px; font-size: 12px; }
+.row { display: flex; align-items: baseline; gap: 6px; padding: 3px 0; }
+.row .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .amt { white-space: nowrap; font-variant-numeric: tabular-nums; }
+a, .link { color: var(--blue); text-decoration: none; cursor: pointer; background: none; border: 0; padding: 0; font: inherit; }
+a:hover, .link:hover { text-decoration: underline; }
+button.btn { font: inherit; font-size: 12px; padding: 4px 9px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--text); cursor: pointer; }
+button.btn:hover { background: var(--panel); }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.cand { display: block; width: 100%; text-align: left; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text); padding: 7px 9px; margin-top: 6px; cursor: pointer; font: inherit; }
+.cand:hover { background: var(--panel); }
+input[type=search] { width: 100%; font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); }
+.err { color: var(--red); font-size: 12px; margin-top: 4px; }
+.skel { height: 12px; border-radius: 4px; background: var(--panel); margin: 8px 0; }
+</style>
+</head>
+<body>
+<header><span class="dot" aria-hidden="true"></span><b>QuickBooks</b><span class="muted small" id="asof"></span>
+  <button class="link small" id="refresh" style="margin-left:auto" title="Refresh">Refresh</button></header>
+<main id="app"><p class="muted">Open a conversation to see its QuickBooks account.</p></main>
+
+<script src="https://unpkg.com/@frontapp/plugin-sdk@1.10.0/dist/index.umd.js"></script>
+<script>
+(function () {
+  const API = "https://azvovuioadmulakatfwt.supabase.co/functions/v1/qbo-front-mcp/api";
+  const params = new URLSearchParams(location.search);
+  const KEY = params.get("key") || window.QBO_SIDEBAR_KEY; // the second form is for local testing only
+  const app = document.getElementById("app");
+  const asofEl = document.getElementById("asof");
+  let frontContext = null;
+  let current = null; // { conversationId, request }
+  let seq = 0;
+
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const usd = (n) => n == null ? "" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(n));
+  const day = (d) => d ? new Date(`${String(d).slice(0, 10)}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: String(d).slice(0, 4) === String(new Date().getFullYear()) ? undefined : "numeric" }) : "";
+  const time = (iso) => iso ? new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
+  const label = { invoice: "Invoice", estimate: "Estimate", payment: "Payment", credit_memo: "Credit memo", sales_receipt: "Sales receipt", refund_receipt: "Refund", vendor_bill: "Vendor bill" };
+
+  function remembered(conversationId) {
+    try { return JSON.parse(localStorage.getItem("qbo-choice") || "{}")[conversationId]; } catch { return undefined; }
+  }
+  function remember(conversationId, customerId) {
+    try {
+      const all = JSON.parse(localStorage.getItem("qbo-choice") || "{}");
+      all[conversationId] = customerId;
+      localStorage.setItem("qbo-choice", JSON.stringify(all));
+    } catch { /* storage unavailable: choice is not remembered */ }
+  }
+
+  function openUrl(url) {
+    if (!url) return;
+    if (frontContext && typeof frontContext.openUrl === "function") frontContext.openUrl(url);
+    else window.open(url, "_blank", "noopener");
+  }
+  app.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-url]");
+    if (el) { e.preventDefault(); openUrl(el.dataset.url); }
+  });
+
+  async function api(path, body) {
+    const headers = { "content-type": "application/json", "x-sidebar-key": KEY || "" };
+    if (frontContext && frontContext.teammate && frontContext.teammate.email) headers["x-front-teammate"] = frontContext.teammate.email;
+    const res = await fetch(`${API}/${path}`, { method: "POST", headers, body: JSON.stringify(body) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `QuickBooks lookup failed (${res.status}).`);
+    return data;
+  }
+
+  function loading(text) {
+    app.innerHTML = `<p class="muted">${esc(text)}</p><div class="skel" style="width:70%"></div><div class="skel"></div><div class="skel" style="width:55%"></div>`;
+  }
+
+  function searchBox(placeholder) {
+    return `<section><h3>Search another customer</h3>
+      <form id="search"><input type="search" name="q" placeholder="${esc(placeholder || "Name, email, Client ID or invoice no.")}" aria-label="Search QuickBooks customers"></form>
+      <div id="search-err" class="err"></div><div id="search-results"></div></section>`;
+  }
+
+  function wireSearch() {
+    const form = document.getElementById("search");
+    if (!form) return;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const q = form.q.value.trim();
+      const err = document.getElementById("search-err");
+      const out = document.getElementById("search-results");
+      err.textContent = "";
+      if (q.length < 2) { err.textContent = "Type at least 2 characters."; return; }
+      out.innerHTML = `<p class="muted small">Searching…</p>`;
+      try {
+        const r = await api("search", { query: q });
+        const m = r.matches || [];
+        out.innerHTML = m.length ? m.map(candidate).join("") : `<p class="muted small">${esc(r.guidance || "No match.")}</p>`;
+      } catch (ex) { out.innerHTML = ""; err.textContent = ex.message; }
+    });
+    form.q.addEventListener("input", () => { document.getElementById("search-err").textContent = ""; });
+  }
+
+  function candidate(c) {
+    return `<button class="cand" data-customer="${esc(c.customer_id)}">
+      <div><b>${esc(c.display_name)}</b></div>
+      <div class="muted small">${esc(c.match_reason || "")}${c.found_by ? ` · ${esc(c.found_by)}` : ""}${c.balance ? ` · balance ${usd(c.balance)}` : ""}${c.active === false ? " · inactive" : ""}</div>
+    </button>`;
+  }
+
+  app.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-customer]");
+    if (!el) return;
+    e.preventDefault();
+    const id = el.dataset.customer;
+    if (current && current.conversationId) remember(current.conversationId, id);
+    load({ ...(current ? current.request : {}), customer_id: id });
+  });
+
+  function mentionRow(m) {
+    const status = m.kind === "invoice" ? (m.balance > 0 ? `${usd(m.balance)} open` : "paid")
+      : m.kind === "payment" ? `${usd(m.total)} received` : usd(m.total);
+    return `<div class="row"><span class="grow">${esc(label[m.kind] || m.kind)} <b>${esc(m.doc_number)}</b></span>
+      <span class="amt muted">${esc(status)}</span> <a href="#" data-url="${esc(m.qbo_url)}">Open</a></div>`;
+  }
+
+  function renderCard(r) {
+    const a = r.account || {};
+    const overdueCount = a.overdue_invoice_count || 0;
+    const flags = (r.flags || []).map((f) => `<div class="warn">${esc(f)}</div>`).join("");
+    const mentions = (r.mentions || []).length
+      ? `<section><h3>Mentioned in this email</h3>${r.mentions.map(mentionRow).join("")}</section>` : "";
+    const invoices = (r.open_invoices || []).map((i) => `<div class="row">
+        <span class="grow"><b>${esc(i.doc_number)}</b> <span class="muted small">due ${esc(day(i.due_date))}</span></span>
+        <span class="amt ${i.days_past_due > 0 ? "bad-text" : ""}">${usd(i.balance)}${i.days_past_due > 0 ? ` · ${i.days_past_due}d late` : ""}</span>
+        <a href="#" data-url="${esc(i.qbo_url)}">Open</a></div>`).join("");
+    const more = (r.open_invoice_total || 0) > (r.open_invoices || []).length
+      ? `<div class="small"><a href="#" data-url="${esc(a.qbo_url)}">${r.open_invoice_total - r.open_invoices.length} more in QuickBooks</a></div>` : "";
+    const estimates = (r.estimates || []).map((e) => `<div class="row">
+        <span class="grow"><b>${esc(e.doc_number)}</b> <span class="muted small">${esc(e.status)}${e.invoiced_as ? " → invoiced" : ""}</span></span>
+        <span class="amt">${usd(e.total)}</span> <a href="#" data-url="${esc(e.qbo_url)}">Open</a></div>`).join("");
+    const payments = (r.payments || []).map((p) => `<div class="row">
+        <span class="grow">${esc(day(p.date))} <span class="muted small">${esc([p.method, p.reference].filter(Boolean).join(" "))}</span></span>
+        <span class="amt">${usd(p.amount)}</span> <a href="#" data-url="${esc(p.qbo_url)}">Open</a></div>`).join("");
+    const lp = a.last_payment;
+
+    app.innerHTML = `
+      <h2>${esc(a.display_name)}</h2>
+      <div class="muted small">${a.client_id ? `Client ID ${esc(a.client_id)} · ` : ""}${esc(r.matched_by === "chosen" ? "picked for this conversation" : r.matched_by || "")}</div>
+      <div class="chips">
+        <span class="chip ${a.active === false ? "bad" : "good"}">${a.active === false ? "Inactive" : "Active"}</span>
+        ${a.terms ? `<span class="chip">${esc(a.terms)}</span>` : ""}
+        <span class="chip ${overdueCount ? "bad" : "good"}">${overdueCount ? `${overdueCount} overdue` : "Nothing overdue"}</span>
+        ${a.sub_customers_included ? `<span class="chip">${a.sub_customers_included} sub-customers</span>` : ""}
+      </div>
+      <div class="tiles">
+        <div class="tile"><div class="muted small">Open balance</div><div class="v">${usd(a.open_invoice_balance)}</div></div>
+        <div class="tile"><div class="muted small">Overdue</div><div class="v ${a.overdue_balance > 0 ? "bad-text" : ""}">${usd(a.overdue_balance)}</div></div>
+      </div>
+      ${flags}
+      ${mentions}
+      <section><h3>Open invoices</h3>${invoices || `<p class="muted small">None.</p>`}${more}</section>
+      <section><h3>Recent estimates</h3>${estimates || `<p class="muted small">None.</p>`}</section>
+      <section><h3>Recent payments</h3>${payments || `<p class="muted small">None.</p>`}
+        ${(a.unapplied_payments || a.unused_credits) ? `<div class="small muted">Unapplied ${usd(a.unapplied_payments)} · credits ${usd(a.unused_credits)}</div>` : ""}</section>
+      <div class="actions">
+        <button class="btn" data-url="${esc(a.qbo_url)}">Customer in QuickBooks</button>
+        <button class="btn" id="copy">Copy summary</button>
+      </div>
+      <p class="muted small" style="margin-top:10px">Read-only. To download a PDF or make a change, open the item in QuickBooks. Fingerprint transaction-fee balances live in CMS.</p>
+      ${searchBox()}`;
+
+    document.getElementById("copy").addEventListener("click", async (e) => {
+      const summary = [
+        `${a.display_name}${a.client_id ? ` (${a.client_id})` : ""}, QuickBooks as of ${time(r.data_as_of)}:`,
+        `Open balance ${usd(a.open_invoice_balance)}; overdue ${usd(a.overdue_balance)} (${overdueCount} invoice${overdueCount === 1 ? "" : "s"}).`,
+        ...(r.open_invoices || []).map((i) => `- ${i.doc_number}: ${usd(i.balance)} due ${day(i.due_date)}${i.days_past_due > 0 ? ` (${i.days_past_due} days late)` : ""}`),
+        lp ? `Last payment ${usd(lp.amount)} on ${day(lp.date)}${lp.reference ? ` (ref ${lp.reference})` : ""}.` : "",
+      ].filter(Boolean).join("\n");
+      try { await navigator.clipboard.writeText(summary); }
+      catch {
+        const ta = document.createElement("textarea");
+        ta.value = summary; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove();
+      }
+      e.target.textContent = "Copied";
+      setTimeout(() => { e.target.textContent = "Copy summary"; }, 1500);
+    });
+    wireSearch();
+  }
+
+  function render(r) {
+    asofEl.textContent = r.data_as_of ? `· as of ${time(r.data_as_of)}` : "";
+    if (r.state === "matched") return renderCard(r);
+    const mentions = (r.mentions || []).length
+      ? `<section><h3>Mentioned in this email</h3>${r.mentions.map(mentionRow).join("")}</section>` : "";
+    if (r.state === "choose") {
+      app.innerHTML = `<h2>${r.candidates.length === 1 ? "Is this the customer?" : "Which customer is this?"}</h2>
+        <p class="muted small">${r.candidates.length === 1
+          ? "This is a possible match, not a confirmed one (for example, only the email domain matched)."
+          : "More than one QuickBooks customer could match."} Pick one; it's remembered for this conversation.</p>
+        ${r.candidates.map(candidate).join("")}${mentions}${searchBox()}`;
+    } else {
+      const looked = [...((r.searched || {}).emails || []), ...((r.searched || {}).refs || [])];
+      app.innerHTML = `<h2>No QuickBooks match</h2>
+        <p class="muted small">${looked.length ? `Checked ${esc(looked.join(", "))}.` : "No external email or document number to look up."}
+        The sender may be staff forwarding a request, or a contact not on any invoice yet.</p>${mentions}${searchBox()}`;
+    }
+    wireSearch();
+  }
+
+  async function load(request) {
+    const mine = ++seq;
+    loading("Looking up QuickBooks…");
+    try {
+      const r = await api("card", request);
+      if (mine === seq) render(r);
+    } catch (ex) {
+      if (mine !== seq) return;
+      app.innerHTML = `<p class="err">${esc(ex.message)}</p><button class="btn" id="retry">Try again</button>`;
+      document.getElementById("retry").addEventListener("click", () => load(request));
+    }
+  }
+
+  const stripHtml = (html) => {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    return (d.textContent || "").replace(/\s+/g, " ").trim();
+  };
+
+  async function fromConversation(context) {
+    const c = context.conversation;
+    const emails = new Set();
+    if (c.recipient && c.recipient.handle) emails.add(c.recipient.handle);
+    let preview = c.blurb || "";
+    try {
+      const list = await Promise.race([context.listMessages(), new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 2500))]);
+      const messages = (list && list.results) || [];
+      for (const m of messages) {
+        for (const r of [m.from, m.replyTo, ...(m.to || []), ...(m.cc || [])]) if (r && r.handle) emails.add(r.handle);
+      }
+      const firstInbound = messages.find((m) => m.status === "inbound") || messages[0];
+      if (firstInbound && firstInbound.content) {
+        const body = firstInbound.content.type === "html" ? stripHtml(firstInbound.content.body) : firstInbound.content.body;
+        preview = `${preview} ${body}`.slice(0, 4000);
+      }
+    } catch { /* fall back to subject, blurb and recipient */ }
+    const request = { subject: c.subject || "", preview, emails: [...emails].filter((h) => h.includes("@")) };
+    const chosen = remembered(c.id);
+    if (chosen) request.customer_id = chosen;
+    return request;
+  }
+
+  async function onContext(context) {
+    frontContext = context;
+    if (!KEY) {
+      app.innerHTML = `<p class="err">This sidebar URL is missing its key. Ask the Front admin to check the plugin's Sidebar URL.</p>`;
+      return;
+    }
+    if (context.type !== "singleConversation") {
+      current = null;
+      app.innerHTML = `<p class="muted">${context.type === "multiConversations" ? "Select a single conversation" : "Open a conversation"} to see its QuickBooks account.</p>${searchBox()}`;
+      wireSearch();
+      return;
+    }
+    const request = await fromConversation(context);
+    if (frontContext !== context) return;
+    current = { conversationId: context.conversation.id, request };
+    load(request);
+  }
+
+  document.getElementById("refresh").addEventListener("click", () => { if (current) load(current.request); });
+
+  let gotContext = false;
+  if (window.Front && window.Front.contextUpdates) {
+    window.Front.contextUpdates.subscribe((context) => { gotContext = true; onContext(context); });
+  }
+  // Outside Front (testing): ?key=...&email=...&subject=...&preview=...&customer_id=...
+  setTimeout(() => {
+    if (gotContext) return;
+    if (!KEY) { app.innerHTML = `<p class="err">Missing ?key= in the URL.</p>`; return; }
+    const request = {
+      subject: params.get("subject") || "",
+      preview: params.get("preview") || "",
+      emails: params.getAll("email"),
+    };
+    if (params.get("customer_id")) request.customer_id = params.get("customer_id");
+    current = { conversationId: "test", request };
+    if (request.subject || request.preview || request.emails.length || request.customer_id) load(request);
+    else { app.innerHTML = `<p class="muted">Test mode: add &email=, &subject= or &customer_id= to the URL.</p>${searchBox()}`; wireSearch(); }
+  }, 1500);
+})();
+</script>
+</body>
+</html>
