@@ -5,54 +5,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>QuickBooks</title>
 <style>
+/* Biometrics4ALL palette (Mini Brand Guide, Oct 2024): navy text, Main Blue as the one accent,
+   light-grey panels and hairlines; orange only for what needs attention (overdue, warnings). */
 :root {
-  --bg: #ffffff; --panel: #f6f7f9; --line: #e3e6ea; --text: #1f2328; --muted: #656d76;
-  --green: #1a7f37; --green-bg: #e6f4ea; --red: #b42318; --red-bg: #fdecea;
-  --amber: #8a5a00; --amber-bg: #fff4d6; --blue: #0b5cad; --blue-bg: #e8f1fb;
+  --bg: #ffffff; --panel: #f6f9fb; --tint: #eaf1fd; --rule: #d3dce5;
+  --text: #081f2d; --muted: #5b6b78; --accent: #0c5fee; --accent-ink: #003764; --on-accent: #ffffff;
+  --warn: #b35c00; --warn-bg: #fff1e3; --warn-line: #ffd2a6;
 }
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #1d1f23; --panel: #26292e; --line: #363a40; --text: #e6e8eb; --muted: #9aa3ad;
-    --green: #6cc287; --green-bg: #1e3326; --red: #f2837a; --red-bg: #3a2220;
-    --amber: #e8b75a; --amber-bg: #3a2f17; --blue: #7fb2ec; --blue-bg: #1c2b3d; }
+  :root { --bg: #081f2d; --panel: #0f2b3e; --tint: #12365a; --rule: #1f3d52;
+    --text: #eaf1fd; --muted: #9fb2c2; --accent: #5b92ff; --accent-ink: #b7ceec;
+    --warn: #ffad5c; --warn-bg: #3a2610; --warn-line: #6b4214; }
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.45 -apple-system, "Segoe UI", system-ui, sans-serif; }
-header { display: flex; align-items: center; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--bg); }
-header b { font-weight: 600; }
-.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.45 Arial, Helvetica, sans-serif; }
+header { position: sticky; top: 0; z-index: 1; background: var(--bg); border-bottom: 1px solid var(--rule); padding: 10px 12px 8px; }
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand img { height: 20px; width: auto; display: block; }
+.brand .logo-dark { display: none; }
+@media (prefers-color-scheme: dark) { .brand .logo-light { display: none; } .brand .logo-dark { display: block; } }
+.source { display: flex; align-items: center; gap: 6px; margin-top: 7px; font-size: 11.5px; color: var(--muted); }
+.source b { color: var(--text); font-weight: 700; }
+.qb { width: 15px; height: 15px; flex: none; }
 .muted { color: var(--muted); }
 .small { font-size: 11.5px; }
-main { padding: 10px 12px 16px; }
-h2 { font-size: 14px; margin: 0; font-weight: 600; }
-h3 { font-size: 11.5px; font-weight: 600; color: var(--muted); margin: 0 0 4px; }
-section { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 8px; }
-.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-.chip { padding: 1px 7px; border-radius: 10px; font-size: 11.5px; background: var(--panel); color: var(--muted); }
-.chip.good { background: var(--green-bg); color: var(--green); }
-.chip.bad { background: var(--red-bg); color: var(--red); }
-.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
-.tile { background: var(--panel); border-radius: 8px; padding: 6px 8px; }
-.tile .v { font-size: 16px; font-weight: 600; }
-.bad-text { color: var(--red); }
-.warn { background: var(--amber-bg); color: var(--amber); border-radius: 8px; padding: 6px 8px; margin-top: 8px; font-size: 12px; }
+main { padding: 12px 12px 16px; }
+h2 { font-size: 15px; margin: 0; font-weight: 700; }
+h3 { font-size: 10.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .08em; margin: 0 0 6px; }
+section { border-top: 1px solid var(--rule); margin-top: 12px; padding-top: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+.chip { padding: 2px 8px; border-radius: 10px; font-size: 11.5px; background: var(--tint); color: var(--accent-ink); }
+.chip.quiet { background: var(--panel); color: var(--muted); }
+.chip.warn { background: var(--warn-bg); color: var(--warn); }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.tile { background: var(--panel); border-radius: 8px; padding: 8px 10px; }
+.tile .v { font-size: 18px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.tile .v.warn-text, .warn-text { color: var(--warn); }
+.flag { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn-line); border-radius: 8px; padding: 6px 8px; margin-top: 8px; font-size: 12px; }
 .row { display: flex; align-items: baseline; gap: 6px; padding: 3px 0; }
 .row .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row .amt { white-space: nowrap; font-variant-numeric: tabular-nums; }
-a, .link { color: var(--blue); text-decoration: none; cursor: pointer; background: none; border: 0; padding: 0; font: inherit; }
+a, .link { color: var(--accent); text-decoration: none; cursor: pointer; background: none; border: 0; padding: 0; font: inherit; }
 a:hover, .link:hover { text-decoration: underline; }
-button.btn { font: inherit; font-size: 12px; padding: 4px 9px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--text); cursor: pointer; }
+button.btn { font: inherit; font-size: 12px; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--rule); background: var(--bg); color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
 button.btn:hover { background: var(--panel); }
-.actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.cand { display: block; width: 100%; text-align: left; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text); padding: 7px 9px; margin-top: 6px; cursor: pointer; font: inherit; }
-.cand:hover { background: var(--panel); }
-input[type=search] { width: 100%; font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); }
-.err { color: var(--red); font-size: 12px; margin-top: 4px; }
+button.btn.primary { background: #0c5fee; border-color: #0c5fee; color: var(--on-accent); font-weight: 700; } /* brand blue in both themes for white-text contrast */
+button.btn.primary:hover { filter: brightness(1.08); }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.cand { display: block; width: 100%; text-align: left; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--text); padding: 8px 10px; margin-top: 6px; cursor: pointer; font: inherit; }
+.cand:hover { background: var(--panel); border-color: var(--accent); }
+input[type=search] { width: 100%; font: inherit; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg); color: var(--text); }
+input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.err { color: var(--warn); font-size: 12px; margin-top: 4px; }
 .skel { height: 12px; border-radius: 4px; background: var(--panel); margin: 8px 0; }
 </style>
 </head>
 <body>
-<header><span class="dot" aria-hidden="true"></span><b>QuickBooks</b><span class="muted small" id="asof"></span>
-  <button class="link small" id="refresh" style="margin-left:auto" title="Refresh">Refresh</button></header>
+<header>
+  <div class="brand">
+    <img class="logo-light" src="b4all-logo.png" alt="Biometrics4ALL">
+    <img class="logo-dark" src="b4all-logo-dark.png" alt="Biometrics4ALL">
+    <button class="link small" id="refresh" style="margin-left:auto" title="Refresh">Refresh</button>
+  </div>
+  <div class="source">
+    <svg class="qb" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#fff"/><path fill="#2CA01C" d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm.642 4.1335c.9554 0 1.7296.776 1.7296 1.7332v9.0667h1.6c1.614 0 2.9275-1.3156 2.9275-2.933 0-1.6173-1.3136-2.9333-2.9276-2.9333h-.6654V7.3334h.6654c2.5722 0 4.6577 2.0897 4.6577 4.667 0 2.5774-2.0855 4.6666-4.6577 4.6666H12.642zM7.9837 7.333h3.3291v12.533c-.9555 0-1.73-.7759-1.73-1.7332V9.0662H7.9837c-1.6146 0-2.9277 1.316-2.9277 2.9334 0 1.6175 1.3131 2.9333 2.9277 2.9333h.6654v1.7332h-.6654c-2.5725 0-4.6577-2.0892-4.6577-4.6665 0-2.5771 2.0852-4.6666 4.6577-4.6666Z"/></svg>
+    <b>QuickBooks Online</b><span id="asof"></span>
+  </div>
+</header>
 <main id="app"><p class="muted">Open a conversation to see its QuickBooks account.</p></main>
 
 <script src="https://unpkg.com/@frontapp/plugin-sdk@1.10.0/dist/index.umd.js"></script>
@@ -71,6 +90,7 @@ input[type=search] { width: 100%; font: inherit; padding: 5px 8px; border: 1px s
   const usd = (n) => n == null ? "" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(n));
   const day = (d) => d ? new Date(`${String(d).slice(0, 10)}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: String(d).slice(0, 4) === String(new Date().getFullYear()) ? undefined : "numeric" }) : "";
   const time = (iso) => iso ? new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
+  const QB_ICON = document.querySelector("header .qb").outerHTML;
   const label = { invoice: "Invoice", estimate: "Estimate", payment: "Payment", credit_memo: "Credit memo", sales_receipt: "Sales receipt", refund_receipt: "Refund", vendor_bill: "Vendor bill" };
 
   function remembered(conversationId) {
@@ -159,12 +179,12 @@ input[type=search] { width: 100%; font: inherit; padding: 5px 8px; border: 1px s
   function renderCard(r) {
     const a = r.account || {};
     const overdueCount = a.overdue_invoice_count || 0;
-    const flags = (r.flags || []).map((f) => `<div class="warn">${esc(f)}</div>`).join("");
+    const flags = (r.flags || []).map((f) => `<div class="flag">${esc(f)}</div>`).join("");
     const mentions = (r.mentions || []).length
       ? `<section><h3>Mentioned in this email</h3>${r.mentions.map(mentionRow).join("")}</section>` : "";
     const invoices = (r.open_invoices || []).map((i) => `<div class="row">
         <span class="grow"><b>${esc(i.doc_number)}</b> <span class="muted small">due ${esc(day(i.due_date))}</span></span>
-        <span class="amt ${i.days_past_due > 0 ? "bad-text" : ""}">${usd(i.balance)}${i.days_past_due > 0 ? ` · ${i.days_past_due}d late` : ""}</span>
+        <span class="amt ${i.days_past_due > 0 ? "warn-text" : ""}">${usd(i.balance)}${i.days_past_due > 0 ? ` · ${i.days_past_due}d late` : ""}</span>
         <a href="#" data-url="${esc(i.qbo_url)}">Open</a></div>`).join("");
     const more = (r.open_invoice_total || 0) > (r.open_invoices || []).length
       ? `<div class="small"><a href="#" data-url="${esc(a.qbo_url)}">${r.open_invoice_total - r.open_invoices.length} more in QuickBooks</a></div>` : "";
@@ -172,7 +192,7 @@ input[type=search] { width: 100%; font: inherit; padding: 5px 8px; border: 1px s
         <span class="grow"><b>${esc(e.doc_number)}</b> <span class="muted small">${esc(e.status)}${e.invoiced_as ? " → invoiced" : ""}</span></span>
         <span class="amt">${usd(e.total)}</span> <a href="#" data-url="${esc(e.qbo_url)}">Open</a></div>`).join("");
     const payments = (r.payments || []).map((p) => `<div class="row">
-        <span class="grow">${esc(day(p.date))} <span class="muted small">${esc([p.method, p.reference].filter(Boolean).join(" "))}</span></span>
+        <span class="grow">${esc(day(p.date))} <span class="muted small">${esc([...new Set([p.method, p.reference].filter(Boolean))].join(" "))}</span></span>
         <span class="amt">${usd(p.amount)}</span> <a href="#" data-url="${esc(p.qbo_url)}">Open</a></div>`).join("");
     const lp = a.last_payment;
 
@@ -180,14 +200,14 @@ input[type=search] { width: 100%; font: inherit; padding: 5px 8px; border: 1px s
       <h2>${esc(a.display_name)}</h2>
       <div class="muted small">${a.client_id ? `Client ID ${esc(a.client_id)} · ` : ""}${esc(r.matched_by === "chosen" ? "picked for this conversation" : r.matched_by || "")}</div>
       <div class="chips">
-        <span class="chip ${a.active === false ? "bad" : "good"}">${a.active === false ? "Inactive" : "Active"}</span>
-        ${a.terms ? `<span class="chip">${esc(a.terms)}</span>` : ""}
-        <span class="chip ${overdueCount ? "bad" : "good"}">${overdueCount ? `${overdueCount} overdue` : "Nothing overdue"}</span>
-        ${a.sub_customers_included ? `<span class="chip">${a.sub_customers_included} sub-customers</span>` : ""}
+        <span class="chip ${a.active === false ? "quiet" : ""}">${a.active === false ? "Inactive" : "Active"}</span>
+        ${a.terms ? `<span class="chip quiet">${esc(a.terms)}</span>` : ""}
+        <span class="chip ${overdueCount ? "warn" : ""}">${overdueCount ? `${overdueCount} overdue` : "Nothing overdue"}</span>
+        ${a.sub_customers_included ? `<span class="chip quiet">${a.sub_customers_included} sub-customers</span>` : ""}
       </div>
       <div class="tiles">
         <div class="tile"><div class="muted small">Open balance</div><div class="v">${usd(a.open_invoice_balance)}</div></div>
-        <div class="tile"><div class="muted small">Overdue</div><div class="v ${a.overdue_balance > 0 ? "bad-text" : ""}">${usd(a.overdue_balance)}</div></div>
+        <div class="tile"><div class="muted small">Overdue</div><div class="v ${a.overdue_balance > 0 ? "warn-text" : ""}">${usd(a.overdue_balance)}</div></div>
       </div>
       ${flags}
       ${mentions}
@@ -196,7 +216,7 @@ input[type=search] { width: 100%; font: inherit; padding: 5px 8px; border: 1px s
       <section><h3>Recent payments</h3>${payments || `<p class="muted small">None.</p>`}
         ${(a.unapplied_payments || a.unused_credits) ? `<div class="small muted">Unapplied ${usd(a.unapplied_payments)} · credits ${usd(a.unused_credits)}</div>` : ""}</section>
       <div class="actions">
-        <button class="btn" data-url="${esc(a.qbo_url)}">Customer in QuickBooks</button>
+        <button class="btn primary" data-url="${esc(a.qbo_url)}">${QB_ICON}Open in QuickBooks</button>
         <button class="btn" id="copy">Copy summary</button>
       </div>
       <p class="muted small" style="margin-top:10px">Read-only. To download a PDF or make a change, open the item in QuickBooks. Fingerprint transaction-fee balances live in CMS.</p>
