@@ -10,28 +10,32 @@
 :root {
   --bg: #ffffff; --panel: #f6f9fb; --tint: #eaf1fd; --rule: #d3dce5;
   --text: #081f2d; --muted: #5b6b78; --accent: #0c5fee; --accent-ink: #003764; --on-accent: #ffffff;
-  --warn: #b35c00; --warn-bg: #fff1e3; --warn-line: #ffd2a6;
+  --warn: #b35c00; --warn-bg: #fff1e3; --warn-line: #ffd2a6; --live: #1f8a3b;
 }
 @media (prefers-color-scheme: dark) {
   :root { --bg: #081f2d; --panel: #0f2b3e; --tint: #12365a; --rule: #1f3d52;
     --text: #eaf1fd; --muted: #9fb2c2; --accent: #5b92ff; --accent-ink: #b7ceec;
-    --warn: #ffad5c; --warn-bg: #3a2610; --warn-line: #6b4214; }
+    --warn: #ffad5c; --warn-bg: #3a2610; --warn-line: #6b4214; --live: #4cc46d; }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.45 Arial, Helvetica, sans-serif; }
-header { position: sticky; top: 0; z-index: 1; background: var(--bg); border-bottom: 1px solid var(--rule); padding: 10px 12px 8px; }
+header { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--rule); padding: 10px 12px 8px; }
 .brand { display: flex; align-items: center; gap: 8px; }
 .brand img { height: 20px; width: auto; display: block; }
 .brand .logo-dark { display: none; }
 @media (prefers-color-scheme: dark) { .brand .logo-light { display: none; } .brand .logo-dark { display: block; } }
 .source { display: flex; align-items: center; gap: 6px; margin-top: 7px; font-size: 11.5px; color: var(--muted); }
 .source b { color: var(--text); font-weight: 700; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); display: inline-block; }
+.dot.live { background: var(--live); }
+.srcnote { font-size: 11.5px; color: var(--warn); margin-top: 4px; }
 .qb { width: 15px; height: 15px; flex: none; }
 .muted { color: var(--muted); }
 .small { font-size: 11.5px; }
 main { padding: 12px 12px 16px; }
 h2 { font-size: 15px; margin: 0; font-weight: 700; }
-h3 { font-size: 10.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .08em; margin: 0 0 6px; }
+h3 { font-size: 10.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .08em; margin: 0 0 6px; display: flex; align-items: baseline; gap: 6px; }
+h3 .link { margin-left: auto; text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 11.5px; }
 section { border-top: 1px solid var(--rule); margin-top: 12px; padding-top: 10px; }
 .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
 .chip { padding: 2px 8px; border-radius: 10px; font-size: 11.5px; background: var(--tint); color: var(--accent-ink); }
@@ -42,22 +46,36 @@ section { border-top: 1px solid var(--rule); margin-top: 12px; padding-top: 10px
 .tile .v { font-size: 18px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
 .tile .v.warn-text, .warn-text { color: var(--warn); }
 .flag { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn-line); border-radius: 8px; padding: 6px 8px; margin-top: 8px; font-size: 12px; }
-.row { display: flex; align-items: baseline; gap: 6px; padding: 3px 0; }
+.item { padding: 4px 0; border-bottom: 1px dashed var(--rule); }
+.item:last-child { border-bottom: 0; }
+.row { display: flex; align-items: baseline; gap: 6px; }
 .row .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row .amt { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+.acts { display: inline-flex; gap: 8px; white-space: nowrap; }
 a, .link { color: var(--accent); text-decoration: none; cursor: pointer; background: none; border: 0; padding: 0; font: inherit; }
 a:hover, .link:hover { text-decoration: underline; }
+.link[disabled] { color: var(--muted); cursor: default; text-decoration: none; }
 button.btn { font: inherit; font-size: 12px; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--rule); background: var(--bg); color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
 button.btn:hover { background: var(--panel); }
 button.btn.primary { background: #0c5fee; border-color: #0c5fee; color: var(--on-accent); font-weight: 700; } /* brand blue in both themes for white-text contrast */
 button.btn.primary:hover { filter: brightness(1.08); }
+button.btn[disabled] { opacity: .6; cursor: default; }
 .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .cand { display: block; width: 100%; text-align: left; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--text); padding: 8px 10px; margin-top: 6px; cursor: pointer; font: inherit; }
 .cand:hover { background: var(--panel); border-color: var(--accent); }
-input[type=search] { width: 100%; font: inherit; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg); color: var(--text); }
-input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+input[type=search], input[type=text] { width: 100%; font: inherit; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg); color: var(--text); }
+input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.pair { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; }
 .err { color: var(--warn); font-size: 12px; margin-top: 4px; }
+.ok { color: var(--live); font-size: 12px; margin-top: 4px; }
 .skel { height: 12px; border-radius: 4px; background: var(--panel); margin: 8px 0; }
+.detail { background: var(--panel); border-radius: 6px; padding: 6px 8px; margin: 4px 0 2px; font-size: 12px; }
+.detail .row { padding: 1px 0; }
+.toast { position: fixed; left: 12px; right: 12px; bottom: 12px; background: var(--text); color: var(--bg); border-radius: 8px; padding: 8px 10px; font-size: 12px; z-index: 5; display: none; }
+.toast.show { display: block; }
+details > summary { cursor: pointer; color: var(--accent); font-size: 12px; list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
 </style>
 </head>
 <body>
@@ -71,27 +89,44 @@ input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: -1p
     <svg class="qb" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#fff"/><path fill="#2CA01C" d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm.642 4.1335c.9554 0 1.7296.776 1.7296 1.7332v9.0667h1.6c1.614 0 2.9275-1.3156 2.9275-2.933 0-1.6173-1.3136-2.9333-2.9276-2.9333h-.6654V7.3334h.6654c2.5722 0 4.6577 2.0897 4.6577 4.667 0 2.5774-2.0855 4.6666-4.6577 4.6666H12.642zM7.9837 7.333h3.3291v12.533c-.9555 0-1.73-.7759-1.73-1.7332V9.0662H7.9837c-1.6146 0-2.9277 1.316-2.9277 2.9334 0 1.6175 1.3131 2.9333 2.9277 2.9333h.6654v1.7332h-.6654c-2.5725 0-4.6577-2.0892-4.6577-4.6665 0-2.5771 2.0852-4.6666 4.6577-4.6666Z"/></svg>
     <b>QuickBooks Online</b><span id="asof"></span>
   </div>
+  <div class="srcnote" id="srcnote" hidden></div>
 </header>
 <main id="app"><p class="muted">Open a conversation to see its QuickBooks account.</p></main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://unpkg.com/@frontapp/plugin-sdk@1.10.0/dist/index.umd.js"></script>
 <script>
 (function () {
   const API = "https://azvovuioadmulakatfwt.supabase.co/functions/v1/qbo-front-mcp/api";
+  const SUPPORT = "support@biometrics4all.com";
   const params = new URLSearchParams(location.search);
   const KEY = params.get("key") || window.QBO_SIDEBAR_KEY; // the second form is for local testing only
   const app = document.getElementById("app");
   const asofEl = document.getElementById("asof");
+  const srcNote = document.getElementById("srcnote");
+  const toastEl = document.getElementById("toast");
   let frontContext = null;
-  let current = null; // { conversationId, request }
+  let current = null; // { conversationId, request, replyTo, draftId }
+  let card = null; // the last card shown
   let seq = 0;
 
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const usd = (n) => n == null ? "" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(n));
-  const day = (d) => d ? new Date(`${String(d).slice(0, 10)}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: String(d).slice(0, 4) === String(new Date().getFullYear()) ? undefined : "numeric" }) : "";
+  const asDate = (d) => new Date(`${String(d).slice(0, 10)}T12:00:00`);
+  const day = (d) => d ? asDate(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: String(d).slice(0, 4) === String(new Date().getFullYear()) ? undefined : "numeric" }) : "";
+  const longDay = (d) => d ? asDate(d).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "";
   const time = (iso) => iso ? new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
+  const todayIso = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
   const QB_ICON = document.querySelector("header .qb").outerHTML;
   const label = { invoice: "Invoice", estimate: "Estimate", payment: "Payment", credit_memo: "Credit memo", sales_receipt: "Sales receipt", refund_receipt: "Refund", vendor_bill: "Vendor bill" };
+  const PDF_KINDS = new Set(["invoice", "estimate", "credit_memo", "sales_receipt", "refund_receipt", "payment"]);
+
+  function toast(text, ms) {
+    toastEl.textContent = text;
+    toastEl.classList.add("show");
+    clearTimeout(toast.t);
+    toast.t = setTimeout(() => toastEl.classList.remove("show"), ms || 2600);
+  }
 
   function remembered(conversationId) {
     try { return JSON.parse(localStorage.getItem("qbo-choice") || "{}")[conversationId]; } catch { return undefined; }
@@ -109,34 +144,334 @@ input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: -1p
     if (frontContext && typeof frontContext.openUrl === "function") frontContext.openUrl(url);
     else window.open(url, "_blank", "noopener");
   }
-  app.addEventListener("click", (e) => {
-    const el = e.target.closest("[data-url]");
-    if (el) { e.preventDefault(); openUrl(el.dataset.url); }
-  });
 
+  function headers() {
+    const h = { "content-type": "application/json", "x-sidebar-key": KEY || "" };
+    if (frontContext && frontContext.teammate && frontContext.teammate.email) h["x-front-teammate"] = frontContext.teammate.email;
+    return h;
+  }
   async function api(path, body) {
-    const headers = { "content-type": "application/json", "x-sidebar-key": KEY || "" };
-    if (frontContext && frontContext.teammate && frontContext.teammate.email) headers["x-front-teammate"] = frontContext.teammate.email;
-    const res = await fetch(`${API}/${path}`, { method: "POST", headers, body: JSON.stringify(body) });
+    const res = await fetch(`${API}/${path}`, { method: "POST", headers: headers(), body: JSON.stringify(body) });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `QuickBooks lookup failed (${res.status}).`);
     return data;
+  }
+
+  // ---- Front actions: everything lands in a reply draft the teammate reviews and sends ----
+
+  const inFront = () => frontContext && frontContext.type === "singleConversation" && typeof frontContext.createDraft === "function";
+  const toHtml = (text) => text.split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
+
+  async function addToReply(text, files) {
+    if (!inFront()) {
+      if (text) await copy(text);
+      toast(files && files.length ? `Outside Front: ${files.length} PDF ready (${Math.round(files.reduce((t, f) => t + f.size, 0) / 1024)} KB); the text is copied.` : "Outside Front: reply text copied to the clipboard.", 4000);
+      return;
+    }
+    const update = { updateMode: "insert" };
+    if (text) update.content = { body: toHtml(text), type: "html" };
+    if (files && files.length) update.attachments = files;
+    if (current && current.draftId) {
+      try { await frontContext.updateDraft(current.draftId, update); toast("Added to your reply."); return; }
+      catch { current.draftId = null; /* the draft was sent or discarded: start a new one */ }
+    }
+    const template = {};
+    if (update.content) template.content = update.content;
+    if (update.attachments) template.attachments = update.attachments;
+    if (current && current.replyTo) template.replyOptions = { type: "reply", originalMessageId: current.replyTo };
+    const draft = await frontContext.createDraft(template);
+    if (current && draft && draft.id) current.draftId = draft.id;
+    toast("Reply drafted. Review it and send from Front.");
+  }
+
+  async function forwardToSupport(subject, text) {
+    if (!inFront()) { await copy(`${subject}\n\n${text}`); toast("Outside Front: handoff text copied."); return; }
+    const template = { to: [SUPPORT], subject, content: { body: toHtml(text), type: "html" } };
+    if (current && current.replyTo) template.replyOptions = { type: "forward", originalMessageId: current.replyTo };
+    await frontContext.createDraft(template);
+    toast("Forward to Support drafted. Review it and send.");
+  }
+
+  async function copy(text) {
+    try { await navigator.clipboard.writeText(text); }
+    catch {
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove();
+    }
+  }
+
+  async function pdfFile(kind, id, name) {
+    const res = await fetch(`${API}/pdf`, { method: "POST", headers: headers(), body: JSON.stringify({ kind, id }) });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || `Couldn't get the PDF (${res.status}).`);
+    }
+    const blob = await res.blob();
+    return new File([blob], `${name}.pdf`, { type: "application/pdf" });
+  }
+
+  // ---- reply wording: facts only, no promises about dates or outcomes ----
+
+  const plural = (list) => (String(list).includes(",") ? "s" : "");
+  function paymentText(p) {
+    const how = [...new Set([p.method, p.reference ? `ref ${p.reference}` : ""].filter(Boolean))].join(", ");
+    const applied = p.applied_to_invoices ? ` and applied it to invoice${plural(p.applied_to_invoices)} ${p.applied_to_invoices}` : "";
+    const left = Number(p.unapplied) > 0 ? ` ${usd(p.unapplied)} of it is not yet applied to an invoice.` : "";
+    return `Thank you. We received your payment of ${usd(p.amount)} on ${longDay(p.date)}${how ? ` (${how})` : ""}${applied}.${left}`;
+  }
+  function invoiceText(i) {
+    if (Number(i.balance) <= 0) return `Invoice ${i.doc_number} (dated ${longDay(i.date)}, ${usd(i.total)}) is paid in full.`;
+    const late = Number(i.days_past_due) > 0 ? `, and is ${i.days_past_due} days past due` : "";
+    return `Invoice ${i.doc_number} (dated ${longDay(i.date)}, ${usd(i.total)}) has an open balance of ${usd(i.balance)}${i.due_date ? `, due ${longDay(i.due_date)}` : ""}${late}.`;
+  }
+  function balanceText(r) {
+    const a = r.account || {};
+    const inv = r.open_invoices || [];
+    if (!inv.length) return `As of ${longDay(todayIso())}, your account has no open invoices.`;
+    const lines = inv.map((i) => `${i.doc_number}: ${usd(i.balance)}${i.due_date ? `, due ${longDay(i.due_date)}` : ""}${Number(i.days_past_due) > 0 ? ` (${i.days_past_due} days past due)` : ""}`);
+    const more = (r.open_invoice_total || 0) > inv.length ? `\n…and ${r.open_invoice_total - inv.length} more.` : "";
+    return `As of ${longDay(todayIso())}, your open balance is ${usd(a.open_invoice_balance)} across ${r.open_invoice_total || inv.length} invoice${(r.open_invoice_total || inv.length) === 1 ? "" : "s"}:\n${lines.join("\n")}${more}`;
+  }
+  const NOT_RECORDED = "We haven't recorded that payment yet. We'll apply it as soon as it arrives.";
+
+  // Is an approved estimate paid? Invoiced and paid in full, or a payment on or after the
+  // estimate date that covers its total (allowing the 3.2% card / 1% ACH fees).
+  function estimatePaid(e, payments) {
+    const inv = e.invoices || [];
+    if (inv.length) {
+      const open = inv.reduce((t, i) => t + Number(i.balance || 0), 0);
+      return open <= 0
+        ? { ok: true, text: `invoiced as ${e.invoiced_as} and paid in full` }
+        : { ok: false, text: `invoiced as ${e.invoiced_as}; ${usd(open)} still open` };
+    }
+    const total = Number(e.total || 0);
+    const hit = (payments || []).find((p) => String(p.date) >= String(e.date) && Number(p.amount) >= total - 0.01 && Number(p.amount) <= total * 1.035 + 0.01);
+    return hit
+      ? { ok: true, text: `payment of ${usd(hit.amount)} on ${day(hit.date)}${hit.method ? ` (${hit.method})` : ""} matches the total; confirm it is for this order` }
+      : { ok: false, text: "no payment matching the total was found since the estimate date" };
+  }
+
+  // ---- rendering ----
+
+  let liveNow = false; // PDFs and "Attach" need live QuickBooks
+  function setSource(src) {
+    liveNow = Boolean(src && src.kind === "live");
+    if (!src) { asofEl.innerHTML = ""; srcNote.hidden = true; return; }
+    if (src.kind === "live") {
+      asofEl.innerHTML = ` · <span class="dot live"></span> Live ${esc(time(src.as_of))}`;
+      srcNote.hidden = true;
+    } else {
+      asofEl.innerHTML = ` · <span class="dot"></span> Mirror ${esc(time(src.as_of))}`;
+      srcNote.textContent = `Showing B4ALL's copy from about 15 minutes ago, because ${src.reason || "live QuickBooks isn't answering"}. PDFs are off until it's back.`;
+      srcNote.hidden = false;
+    }
   }
 
   function loading(text) {
     app.innerHTML = `<p class="muted">${esc(text)}</p><div class="skel" style="width:70%"></div><div class="skel"></div><div class="skel" style="width:55%"></div>`;
   }
 
-  function searchBox(placeholder) {
+  const attachLink = (kind, id, name) => liveNow && PDF_KINDS.has(kind) && id
+    ? `<button class="link" data-attach="${esc(kind)}|${esc(id)}|${esc(name)}" title="Attach the PDF to your reply">Attach</button>` : "";
+  const openLink = (url) => url ? `<a href="#" data-url="${esc(url)}" title="Open in QuickBooks">Open</a>` : "";
+
+  function searchBox() {
     return `<section><h3>Search another customer</h3>
-      <form id="search"><input type="search" name="q" placeholder="${esc(placeholder || "Name, email, Client ID or invoice no.")}" aria-label="Search QuickBooks customers"></form>
-      <div id="search-err" class="err"></div><div id="search-results"></div></section>`;
+      <form id="search"><input type="search" name="q" placeholder="Name, email, Client ID or invoice no." aria-label="Search QuickBooks customers"></form>
+      <div id="search-err" class="err"></div><div id="search-results"></div>
+      <details style="margin-top:8px"><summary>Look up a vendor (AP)</summary>
+        <form id="vendor-form" style="margin-top:6px"><input type="search" name="v" placeholder="Vendor name or email" aria-label="Search QuickBooks vendors"></form>
+        <div id="vendor-err" class="err"></div></details></section>`;
   }
 
-  function wireSearch() {
+  function paymentFinder() {
+    return `<section><h3>Did a payment arrive?</h3>
+      <form id="payfind" class="pair">
+        <input type="text" name="amount" inputmode="decimal" placeholder="Amount, e.g. 4250.00" aria-label="Payment amount">
+        <input type="text" name="reference" placeholder="Check or ref no." aria-label="Check or reference number">
+        <button class="btn" type="submit">Find</button>
+      </form>
+      <div id="payfind-err" class="err"></div><div id="payfind-results"></div></section>`;
+  }
+
+  function candidate(c) {
+    return `<button class="cand" data-customer="${esc(c.customer_id)}">
+      <div><b>${esc(c.display_name)}</b></div>
+      <div class="muted small">${esc(c.match_reason || "")}${c.found_by ? ` · ${esc(c.found_by)}` : ""}${c.balance ? ` · balance ${usd(c.balance)}` : ""}${c.active === false ? " · inactive" : ""}</div>
+    </button>`;
+  }
+
+  function mentionRow(m, i) {
+    const status = m.kind === "invoice" ? (Number(m.balance) > 0 ? `${usd(m.balance)} open` : "paid")
+      : m.kind === "payment" ? `${usd(m.total)} received`
+      : m.kind === "estimate" ? [m.status, usd(m.total)].filter(Boolean).join(" · ")
+      : usd(m.total);
+    const reply = m.kind === "invoice" ? `<button class="link" data-reply="mention|${i}">Reply</button>` : "";
+    return `<div class="item"><div class="row"><span class="grow">${esc(label[m.kind] || m.kind)} <b>${esc(m.doc_number)}</b>
+      <span class="muted small">${esc(m.party_name && card && card.account && m.party_name !== card.account.display_name ? m.party_name : "")}</span></span>
+      <span class="amt muted">${esc(status)}</span></div>
+      <div class="sub"><span class="acts">${reply}${attachLink(m.kind, m.id, `${label[m.kind] || "Document"} ${m.doc_number}`)}${openLink(m.qbo_url)}</span></div></div>`;
+  }
+
+  function invoiceRow(i, idx) {
+    const late = Number(i.days_past_due) > 0;
+    return `<div class="item"><div class="row">
+        <span class="grow"><button class="link" data-detail="${esc(i.doc_number)}" title="Show lines and payments"><b>${esc(i.doc_number)}</b></button>
+          <span class="muted small">due ${esc(day(i.due_date))}${i.po_number ? ` · PO ${esc(i.po_number)}` : ""}</span></span>
+        <span class="amt ${late ? "warn-text" : ""}">${usd(i.balance)}${late ? ` · ${i.days_past_due}d late` : ""}</span></div>
+      <div class="sub"><span class="acts"><button class="link" data-reply="invoice|${idx}">Reply</button>${attachLink("invoice", i.invoice_id, `Invoice ${i.doc_number}`)}${openLink(i.qbo_url)}</span>
+        ${i.email_status === "EmailSent" ? `<span class="muted"> · emailed from QuickBooks</span>` : ""}</div>
+      <div id="detail-${esc(i.doc_number)}"></div></div>`;
+  }
+
+  function estimateRow(e, idx, payments, mentioned) {
+    // The paid check matters once an order is approved (or the email is about it), not for open quotes.
+    const relevant = mentioned || /^(accepted|closed|converted)$/i.test(String(e.status || "")) || (e.invoices || []).length;
+    const paid = relevant ? estimatePaid(e, payments) : null;
+    const handoff = mentioned ? `<button class="link" data-handoff="${idx}" title="Forward to Support with the macro subject">Send to Support</button>` : "";
+    const facts = [e.sales_rep ? `Rep ${esc(e.sales_rep)}` : "", e.expiration_date && !paid ? `expires ${esc(day(e.expiration_date))}` : "",
+      paid ? `<span class="${paid.ok ? "" : "warn-text"}">${esc(paid.text)}</span>` : ""].filter(Boolean).join(" · ");
+    return `<div class="item"><div class="row">
+        <span class="grow"><b>${esc(e.doc_number)}</b> <span class="muted small">${esc(e.status)}${e.invoiced_as ? ` → ${esc(e.invoiced_as)}` : ""}</span></span>
+        <span class="amt">${usd(e.total)}</span></div>
+      ${facts ? `<div class="sub">${facts}</div>` : ""}
+      <div class="sub"><span class="acts">${handoff}${attachLink("estimate", e.estimate_id, `Estimate ${e.doc_number}`)}${openLink(e.qbo_url)}</span></div></div>`;
+  }
+
+  function paymentRow(p, idx, scope) {
+    const what = [...new Set([p.method, p.reference].filter(Boolean))].join(" ");
+    return `<div class="item"><div class="row">
+        <span class="grow">${esc(day(p.date))} <span class="muted small">${esc(what)}${scope === "found" && p.customer_name ? ` · ${esc(p.customer_name)}` : ""}</span></span>
+        <span class="amt">${usd(p.amount)}</span></div>
+      <div class="sub">${p.applied_to_invoices ? `Applied to ${esc(p.applied_to_invoices)}` : p.kind === "sales_receipt" ? "Sales receipt" : "Not applied to an invoice"}${Number(p.unapplied) > 0 ? ` · <span class="warn-text">${usd(p.unapplied)} unapplied</span>` : ""}</div>
+      <div class="sub"><span class="acts"><button class="link" data-reply="${scope}|${idx}">Reply</button>${attachLink(p.kind === "sales_receipt" ? "sales_receipt" : "payment", p.id || p.payment_id, `${p.kind === "sales_receipt" ? "Receipt" : "Payment"} ${day(p.date)}`)}${openLink(p.qbo_url)}</span></div></div>`;
+  }
+
+  function creditRow(c) {
+    return `<div class="item"><div class="row"><span class="grow">${esc(label[c.kind] || c.kind)} <b>${esc(c.doc_number || "")}</b> <span class="muted small">${esc(day(c.date))}</span></span>
+      <span class="amt">${usd(c.amount)}</span></div>
+      <div class="sub">${c.kind === "credit_memo" ? (Number(c.remaining_credit) > 0 ? `${usd(c.remaining_credit)} credit left` : "fully used") : esc([c.method, c.reference].filter(Boolean).join(" "))}
+        · <span class="acts">${attachLink(c.kind, c.id, `${label[c.kind] || "Document"} ${c.doc_number || ""}`.trim())}${openLink(c.qbo_url)}</span></div></div>`;
+  }
+
+  function renderCard(r) {
+    card = r;
+    const a = r.account || {};
+    const overdueCount = a.overdue_invoice_count || 0;
+    const flags = (r.flags || []).map((f) => `<div class="flag">${esc(f)}</div>`).join("");
+    const mentionedEstimates = new Set((r.mentions || []).filter((m) => m.kind === "estimate").map((m) => m.doc_number));
+    const mentions = (r.mentions || []).length
+      ? `<section><h3>Mentioned in this email</h3>${r.mentions.map(mentionRow).join("")}</section>` : "";
+    const invoices = (r.open_invoices || []).map(invoiceRow).join("");
+    const more = (r.open_invoice_total || 0) > (r.open_invoices || []).length
+      ? `<div class="small"><a href="#" data-url="${esc(a.qbo_url)}">${r.open_invoice_total - r.open_invoices.length} more in QuickBooks</a></div>` : "";
+    const estimates = (r.estimates || []).map((e, i) => estimateRow(e, i, r.payments, mentionedEstimates.has(e.doc_number))).join("");
+    const payments = (r.payments || []).map((p, i) => paymentRow(p, i, "payment")).join("");
+    const credits = (r.credits || []).length ? `<section><h3>Credits and refunds</h3>${r.credits.map(creditRow).join("")}</section>` : "";
+    const canAttachAll = (r.open_invoices || []).length > 0 && (r.source || {}).kind === "live";
+
+    app.innerHTML = `
+      <h2>${esc(a.display_name)}</h2>
+      <div class="muted small">${a.client_id ? `Client ID ${esc(a.client_id)} · ` : ""}${esc(r.matched_by === "chosen" ? "picked for this conversation" : r.matched_by || "")}</div>
+      <div class="chips">
+        <span class="chip ${a.active === false ? "quiet" : ""}">${a.active === false ? "Inactive" : "Active"}</span>
+        ${a.terms ? `<span class="chip quiet">${esc(a.terms)}</span>` : ""}
+        <span class="chip ${overdueCount ? "warn" : ""}">${overdueCount ? `${overdueCount} overdue` : "Nothing overdue"}</span>
+        ${a.preferred_delivery_method ? `<span class="chip quiet">Invoices by ${esc(String(a.preferred_delivery_method).toLowerCase())}</span>` : ""}
+        ${a.sub_customers_included ? `<span class="chip quiet">${a.sub_customers_included} sub-customers</span>` : ""}
+      </div>
+      <div class="tiles">
+        <div class="tile"><div class="muted small">Open balance</div><div class="v">${usd(a.open_invoice_balance)}</div></div>
+        <div class="tile"><div class="muted small">Overdue</div><div class="v ${a.overdue_balance > 0 ? "warn-text" : ""}">${usd(a.overdue_balance)}</div></div>
+      </div>
+      ${(a.unapplied_payments || a.unused_credits) ? `<div class="small muted" style="margin-top:6px">Unapplied payments ${usd(a.unapplied_payments)} · unused credits ${usd(a.unused_credits)}</div>` : ""}
+      ${a.email ? `<div class="small muted" style="margin-top:4px">Billing email ${esc(a.email)}</div>` : ""}
+      ${flags}
+      ${mentions}
+      <section><h3>Open invoices${canAttachAll ? `<button class="link" id="attach-all">Attach all</button>` : ""}</h3>${invoices || `<p class="muted small">None.</p>`}${more}</section>
+      <section><h3>Recent payments</h3>${payments || `<p class="muted small">None.</p>`}</section>
+      <section><h3>Recent estimates</h3>${estimates || `<p class="muted small">None.</p>`}</section>
+      ${credits}
+      <div class="actions">
+        <button class="btn primary" data-url="${esc(a.qbo_url)}">${QB_ICON}Open in QuickBooks</button>
+        <button class="btn" id="reply-balance">Reply with balance</button>
+        <button class="btn" id="copy">Copy summary</button>
+      </div>
+      <p class="muted small" style="margin-top:10px">Read-only: changes are made in QuickBooks. Fingerprint transaction-fee balances live in CMS.</p>
+      ${paymentFinder()}
+      ${searchBox()}`;
+
+    document.getElementById("reply-balance").addEventListener("click", () => run(() => addToReply(balanceText(r))));
+    document.getElementById("copy").addEventListener("click", async (e) => {
+      const lp = a.last_payment;
+      const summary = [
+        `${a.display_name}${a.client_id ? ` (${a.client_id})` : ""}, QuickBooks ${(r.source || {}).kind === "live" ? "live" : "mirror"} as of ${time(r.data_as_of)}:`,
+        `Open balance ${usd(a.open_invoice_balance)}; overdue ${usd(a.overdue_balance)} (${overdueCount} invoice${overdueCount === 1 ? "" : "s"}).`,
+        ...(r.open_invoices || []).map((i) => `- ${i.doc_number}: ${usd(i.balance)} due ${day(i.due_date)}${i.days_past_due > 0 ? ` (${i.days_past_due} days late)` : ""}`),
+        lp ? `Last payment ${usd(lp.amount)} on ${day(lp.date)}${lp.reference ? ` (ref ${lp.reference})` : ""}.` : "",
+      ].filter(Boolean).join("\n");
+      await copy(summary);
+      e.target.textContent = "Copied";
+      setTimeout(() => { e.target.textContent = "Copy summary"; }, 1500);
+    });
+    const all = document.getElementById("attach-all");
+    if (all) all.addEventListener("click", () => run(async () => {
+      const list = (r.open_invoices || []).slice(0, 10);
+      toast(`Getting ${list.length} PDF${list.length === 1 ? "" : "s"} from QuickBooks…`, 8000);
+      const files = [];
+      for (const i of list) files.push(await pdfFile("invoice", i.invoice_id, `Invoice ${i.doc_number}`));
+      await addToReply(balanceText(r), files);
+    }));
+    wireForms();
+  }
+
+  function renderVendor(r) {
+    card = r;
+    const v = (r.vendors || [])[0] || {};
+    const bills = (r.bills || []).map((b, i) => `<div class="item"><div class="row">
+        <span class="grow"><b>${esc(b.doc_number || "(no number)")}</b> <span class="muted small">${esc(day(b.date))}${b.due_date ? ` · due ${esc(day(b.due_date))}` : ""}</span></span>
+        <span class="amt ${b.status === "overdue" ? "warn-text" : ""}">${b.status === "paid" ? "paid" : usd(b.balance)}</span></div>
+      <div class="sub">${(b.payments || []).map((p) => `Paid ${usd(p.amount)} on ${esc(day(p.date))}${checkNo(p) ? ` (check ${esc(checkNo(p))})` : ""}`).join("; ") || (Number(b.balance) < Number(b.total) ? `Total ${usd(b.total)}` : "Not paid yet")}</div>
+      <div class="sub"><span class="acts"><button class="link" data-reply="bill|${i}">Reply</button>${openLink(b.qbo_url)}</span></div></div>`).join("");
+    app.innerHTML = `<h2>${esc(v.display_name || "Vendor")}</h2>
+      <div class="muted small">Vendor (accounts payable) · ${esc(r.matched_by || "")}</div>
+      <div class="tiles"><div class="tile"><div class="muted small">We owe</div><div class="v">${usd(v.open_balance)}</div></div>
+        <div class="tile"><div class="muted small">Bills shown</div><div class="v">${(r.bills || []).length}</div></div></div>
+      ${(r.vendors || []).length > 1 ? `<div class="flag">More than one vendor matched; bills for all of them are listed.</div>` : ""}
+      <section><h3>Bills</h3>${bills || `<p class="muted small">No bills.</p>`}</section>
+      <div class="actions"><button class="btn primary" data-url="${esc(v.qbo_url)}">${QB_ICON}Open in QuickBooks</button></div>
+      <p class="muted small" style="margin-top:10px">Vendor payments are approved and sent through Ramp; QuickBooks shows what is booked. Don't promise payment dates.</p>
+      ${searchBox()}`;
+    wireForms();
+  }
+
+  function render(r) {
+    setSource(r.source);
+    if (r.state === "matched") return renderCard(r);
+    if (r.state === "vendor") return renderVendor(r);
+    card = r;
+    const mentions = (r.mentions || []).length
+      ? `<section><h3>Mentioned in this email</h3>${r.mentions.map(mentionRow).join("")}</section>` : "";
+    if (r.state === "choose") {
+      app.innerHTML = `<h2>${r.candidates.length === 1 ? "Is this the customer?" : "Which customer is this?"}</h2>
+        <p class="muted small">${r.candidates.length === 1
+          ? "This is a possible match, not a confirmed one (for example, only the email domain matched)."
+          : "More than one QuickBooks customer could match."} Pick one; it's remembered for this conversation.</p>
+        ${r.candidates.map(candidate).join("")}${mentions}${paymentFinder()}${searchBox()}`;
+    } else {
+      const looked = [...((r.searched || {}).emails || []), ...((r.searched || {}).refs || [])];
+      app.innerHTML = `<h2>No QuickBooks match</h2>
+        <p class="muted small">${looked.length ? `Checked ${esc(looked.join(", "))}.` : "No external email or document number to look up."}
+        The sender may be staff forwarding a request, or a contact not on any invoice yet.</p>${mentions}${paymentFinder()}${searchBox()}`;
+    }
+    wireForms();
+  }
+
+  // ---- forms ----
+
+  function wireForms() {
     const form = document.getElementById("search");
-    if (!form) return;
-    form.addEventListener("submit", async (e) => {
+    if (form) form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const q = form.q.value.trim();
       const err = document.getElementById("search-err");
@@ -150,115 +485,120 @@ input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: -1p
         out.innerHTML = m.length ? m.map(candidate).join("") : `<p class="muted small">${esc(r.guidance || "No match.")}</p>`;
       } catch (ex) { out.innerHTML = ""; err.textContent = ex.message; }
     });
-    form.q.addEventListener("input", () => { document.getElementById("search-err").textContent = ""; });
+    const vf = document.getElementById("vendor-form");
+    if (vf) vf.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const q = vf.v.value.trim();
+      const err = document.getElementById("vendor-err");
+      err.textContent = "";
+      if (q.length < 2) { err.textContent = "Type at least 2 characters."; return; }
+      loading("Looking up the vendor…");
+      try {
+        const r = await api("vendor", { vendor: q });
+        if (!(r.vendors || []).length) { render({ state: "none", searched: { emails: [q] } }); return; }
+        render({ ...r, state: "vendor", matched_by: `search "${q}"` });
+      } catch (ex) { app.innerHTML = `<p class="err">${esc(ex.message)}</p>${searchBox()}`; wireForms(); }
+    });
+    const pf = document.getElementById("payfind");
+    if (pf) pf.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const amount = pf.amount.value.trim();
+      const reference = pf.reference.value.trim();
+      const err = document.getElementById("payfind-err");
+      const out = document.getElementById("payfind-results");
+      err.textContent = "";
+      if (!amount && !reference) { err.textContent = "Enter an amount, a check or reference number, or both."; return; }
+      out.innerHTML = `<p class="muted small">Searching all customers…</p>`;
+      try {
+        const r = await api("payment", { amount, reference });
+        found = (r.payments || []).map((p) => ({ ...p, id: p.payment_id, kind: "payment" }));
+        out.innerHTML = found.length
+          ? `<p class="small ${r.source_kind === "live" ? "ok" : "muted"}">${found.length} recorded${r.source_kind === "live" ? " (checked live)" : ""}:</p>${found.map((p, i) => paymentRow(p, i, "found")).join("")}`
+          : `<p class="small muted">${esc(r.guidance || "No match.")}</p><button class="link small" data-reply="none|0">Reply: not recorded yet</button>`;
+      } catch (ex) { out.innerHTML = ""; err.textContent = ex.message; }
+    });
   }
+  let found = [];
 
-  function candidate(c) {
-    return `<button class="cand" data-customer="${esc(c.customer_id)}">
-      <div><b>${esc(c.display_name)}</b></div>
-      <div class="muted small">${esc(c.match_reason || "")}${c.found_by ? ` · ${esc(c.found_by)}` : ""}${c.balance ? ` · balance ${usd(c.balance)}` : ""}${c.active === false ? " · inactive" : ""}</div>
-    </button>`;
+  // ---- clicks ----
+
+  async function run(fn) {
+    try { await fn(); } catch (ex) { toast(ex.message || String(ex), 5000); }
   }
 
   app.addEventListener("click", (e) => {
-    const el = e.target.closest("[data-customer]");
-    if (!el) return;
+    const t = e.target.closest("[data-url],[data-customer],[data-attach],[data-reply],[data-detail],[data-handoff]");
+    if (!t) return;
     e.preventDefault();
-    const id = el.dataset.customer;
-    if (current && current.conversationId) remember(current.conversationId, id);
-    load({ ...(current ? current.request : {}), customer_id: id });
+    if (t.dataset.url) return openUrl(t.dataset.url);
+    if (t.dataset.customer) {
+      if (current && current.conversationId) remember(current.conversationId, t.dataset.customer);
+      return load({ ...(current ? current.request : {}), customer_id: t.dataset.customer });
+    }
+    if (t.dataset.attach) {
+      const [kind, id, name] = t.dataset.attach.split("|");
+      return run(async () => {
+        t.disabled = true; t.textContent = "Getting PDF…";
+        try { await addToReply("", [await pdfFile(kind, id, name)]); }
+        finally { t.disabled = false; t.textContent = "Attach"; }
+      });
+    }
+    if (t.dataset.reply) {
+      const [scope, idx] = t.dataset.reply.split("|");
+      const r = card || {};
+      const text = scope === "invoice" ? invoiceText((r.open_invoices || [])[idx])
+        : scope === "mention" ? invoiceText((r.mentions || [])[idx])
+        : scope === "payment" ? paymentText((r.payments || [])[idx])
+        : scope === "found" ? paymentText(found[idx])
+        : scope === "bill" ? billText((r.bills || [])[idx])
+        : NOT_RECORDED;
+      return run(() => addToReply(text));
+    }
+    if (t.dataset.detail) return run(() => showDetail(t.dataset.detail));
+    if (t.dataset.handoff) {
+      const r = card || {};
+      const est = (r.estimates || [])[t.dataset.handoff];
+      if (!est) return;
+      const paid = estimatePaid(est, r.payments);
+      const who = (r.account || {}).display_name || "";
+      const subject = `Estimate #${est.doc_number} approved = ${who} = ${paid.ok ? "PAID" : "NOT PAID"}, Rep is ${est.sales_rep || "?"}`;
+      const body = `Estimate ${est.doc_number} for ${who}: ${usd(est.total)}, status ${est.status}.\nPayment check: ${paid.text}.`;
+      return run(() => forwardToSupport(subject, body));
+    }
   });
 
-  function mentionRow(m) {
-    const status = m.kind === "invoice" ? (m.balance > 0 ? `${usd(m.balance)} open` : "paid")
-      : m.kind === "payment" ? `${usd(m.total)} received` : usd(m.total);
-    return `<div class="row"><span class="grow">${esc(label[m.kind] || m.kind)} <b>${esc(m.doc_number)}</b></span>
-      <span class="amt muted">${esc(status)}</span> <a href="#" data-url="${esc(m.qbo_url)}">Open</a></div>`;
+  // Bill-payment numbers are often processor ids (Ramp); only a plain check number means anything to a vendor.
+  function checkNo(p) {
+    return p && /^\d{3,10}$/.test(String(p.reference || "")) ? String(p.reference) : "";
   }
-
-  function renderCard(r) {
-    const a = r.account || {};
-    const overdueCount = a.overdue_invoice_count || 0;
-    const flags = (r.flags || []).map((f) => `<div class="flag">${esc(f)}</div>`).join("");
-    const mentions = (r.mentions || []).length
-      ? `<section><h3>Mentioned in this email</h3>${r.mentions.map(mentionRow).join("")}</section>` : "";
-    const invoices = (r.open_invoices || []).map((i) => `<div class="row">
-        <span class="grow"><b>${esc(i.doc_number)}</b> <span class="muted small">due ${esc(day(i.due_date))}</span></span>
-        <span class="amt ${i.days_past_due > 0 ? "warn-text" : ""}">${usd(i.balance)}${i.days_past_due > 0 ? ` · ${i.days_past_due}d late` : ""}</span>
-        <a href="#" data-url="${esc(i.qbo_url)}">Open</a></div>`).join("");
-    const more = (r.open_invoice_total || 0) > (r.open_invoices || []).length
-      ? `<div class="small"><a href="#" data-url="${esc(a.qbo_url)}">${r.open_invoice_total - r.open_invoices.length} more in QuickBooks</a></div>` : "";
-    const estimates = (r.estimates || []).map((e) => `<div class="row">
-        <span class="grow"><b>${esc(e.doc_number)}</b> <span class="muted small">${esc(e.status)}${e.invoiced_as ? " → invoiced" : ""}</span></span>
-        <span class="amt">${usd(e.total)}</span> <a href="#" data-url="${esc(e.qbo_url)}">Open</a></div>`).join("");
-    const payments = (r.payments || []).map((p) => `<div class="row">
-        <span class="grow">${esc(day(p.date))} <span class="muted small">${esc([...new Set([p.method, p.reference].filter(Boolean))].join(" "))}</span></span>
-        <span class="amt">${usd(p.amount)}</span> <a href="#" data-url="${esc(p.qbo_url)}">Open</a></div>`).join("");
-    const lp = a.last_payment;
-
-    app.innerHTML = `
-      <h2>${esc(a.display_name)}</h2>
-      <div class="muted small">${a.client_id ? `Client ID ${esc(a.client_id)} · ` : ""}${esc(r.matched_by === "chosen" ? "picked for this conversation" : r.matched_by || "")}</div>
-      <div class="chips">
-        <span class="chip ${a.active === false ? "quiet" : ""}">${a.active === false ? "Inactive" : "Active"}</span>
-        ${a.terms ? `<span class="chip quiet">${esc(a.terms)}</span>` : ""}
-        <span class="chip ${overdueCount ? "warn" : ""}">${overdueCount ? `${overdueCount} overdue` : "Nothing overdue"}</span>
-        ${a.sub_customers_included ? `<span class="chip quiet">${a.sub_customers_included} sub-customers</span>` : ""}
-      </div>
-      <div class="tiles">
-        <div class="tile"><div class="muted small">Open balance</div><div class="v">${usd(a.open_invoice_balance)}</div></div>
-        <div class="tile"><div class="muted small">Overdue</div><div class="v ${a.overdue_balance > 0 ? "warn-text" : ""}">${usd(a.overdue_balance)}</div></div>
-      </div>
-      ${flags}
-      ${mentions}
-      <section><h3>Open invoices</h3>${invoices || `<p class="muted small">None.</p>`}${more}</section>
-      <section><h3>Recent estimates</h3>${estimates || `<p class="muted small">None.</p>`}</section>
-      <section><h3>Recent payments</h3>${payments || `<p class="muted small">None.</p>`}
-        ${(a.unapplied_payments || a.unused_credits) ? `<div class="small muted">Unapplied ${usd(a.unapplied_payments)} · credits ${usd(a.unused_credits)}</div>` : ""}</section>
-      <div class="actions">
-        <button class="btn primary" data-url="${esc(a.qbo_url)}">${QB_ICON}Open in QuickBooks</button>
-        <button class="btn" id="copy">Copy summary</button>
-      </div>
-      <p class="muted small" style="margin-top:10px">Read-only. To download a PDF or make a change, open the item in QuickBooks. Fingerprint transaction-fee balances live in CMS.</p>
-      ${searchBox()}`;
-
-    document.getElementById("copy").addEventListener("click", async (e) => {
-      const summary = [
-        `${a.display_name}${a.client_id ? ` (${a.client_id})` : ""}, QuickBooks as of ${time(r.data_as_of)}:`,
-        `Open balance ${usd(a.open_invoice_balance)}; overdue ${usd(a.overdue_balance)} (${overdueCount} invoice${overdueCount === 1 ? "" : "s"}).`,
-        ...(r.open_invoices || []).map((i) => `- ${i.doc_number}: ${usd(i.balance)} due ${day(i.due_date)}${i.days_past_due > 0 ? ` (${i.days_past_due} days late)` : ""}`),
-        lp ? `Last payment ${usd(lp.amount)} on ${day(lp.date)}${lp.reference ? ` (ref ${lp.reference})` : ""}.` : "",
-      ].filter(Boolean).join("\n");
-      try { await navigator.clipboard.writeText(summary); }
-      catch {
-        const ta = document.createElement("textarea");
-        ta.value = summary; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove();
-      }
-      e.target.textContent = "Copied";
-      setTimeout(() => { e.target.textContent = "Copy summary"; }, 1500);
-    });
-    wireSearch();
-  }
-
-  function render(r) {
-    asofEl.textContent = r.data_as_of ? `· as of ${time(r.data_as_of)}` : "";
-    if (r.state === "matched") return renderCard(r);
-    const mentions = (r.mentions || []).length
-      ? `<section><h3>Mentioned in this email</h3>${r.mentions.map(mentionRow).join("")}</section>` : "";
-    if (r.state === "choose") {
-      app.innerHTML = `<h2>${r.candidates.length === 1 ? "Is this the customer?" : "Which customer is this?"}</h2>
-        <p class="muted small">${r.candidates.length === 1
-          ? "This is a possible match, not a confirmed one (for example, only the email domain matched)."
-          : "More than one QuickBooks customer could match."} Pick one; it's remembered for this conversation.</p>
-        ${r.candidates.map(candidate).join("")}${mentions}${searchBox()}`;
-    } else {
-      const looked = [...((r.searched || {}).emails || []), ...((r.searched || {}).refs || [])];
-      app.innerHTML = `<h2>No QuickBooks match</h2>
-        <p class="muted small">${looked.length ? `Checked ${esc(looked.join(", "))}.` : "No external email or document number to look up."}
-        The sender may be staff forwarding a request, or a contact not on any invoice yet.</p>${mentions}${searchBox()}`;
+  function billText(b) {
+    if (!b) return "";
+    if (b.status === "paid") {
+      const p = (b.payments || [])[(b.payments || []).length - 1];
+      return `Bill ${b.doc_number || ""} (${usd(b.total)}) is paid${p ? `: ${usd(p.amount)} on ${longDay(p.date)}${checkNo(p) ? ` (check ${checkNo(p)})` : ""}` : ""}.`.replace(/\s+/g, " ");
     }
-    wireSearch();
+    return `Bill ${b.doc_number || ""} (${usd(b.total)}${b.due_date ? `, due ${longDay(b.due_date)}` : ""}) is open with ${usd(b.balance)} unpaid.`.replace(/\s+/g, " ");
   }
+
+  async function showDetail(doc) {
+    const box = document.getElementById(`detail-${doc}`);
+    if (!box) return;
+    if (box.innerHTML) { box.innerHTML = ""; return; }
+    box.innerHTML = `<div class="detail muted">Loading…</div>`;
+    try {
+      const r = await api("invoice", { invoice: doc });
+      const inv = (r.invoices || [])[0];
+      if (!inv) { box.innerHTML = `<div class="detail muted">Not found.</div>`; return; }
+      const lines = (inv.lines || []).map((l) => `<div class="row"><span class="grow">${esc(l.item || l.description || "")}${l.quantity && l.quantity !== 1 ? ` × ${esc(l.quantity)}` : ""}</span><span class="amt">${usd(l.amount)}</span></div>`).join("");
+      const pays = (inv.payments_applied || []).map((p) => `<div class="row"><span class="grow">Paid ${esc(day(p.date))} ${esc([p.method, p.reference].filter(Boolean).join(" "))}</span><span class="amt">${usd(p.amount_applied)}</span></div>`).join("");
+      box.innerHTML = `<div class="detail">${lines}${Number(inv.tax) ? `<div class="row"><span class="grow">Tax</span><span class="amt">${usd(inv.tax)}</span></div>` : ""}
+        <div class="row"><span class="grow"><b>Total</b></span><span class="amt"><b>${usd(inv.total)}</b></span></div>${pays}
+        ${inv.linked_estimates ? `<div class="muted">From estimate ${esc(inv.linked_estimates.map((e) => e.doc_number).join(", "))}</div>` : ""}
+        ${inv.billing_email ? `<div class="muted">Billed to ${esc(inv.billing_email)}</div>` : ""}</div>`;
+    } catch (ex) { box.innerHTML = `<div class="detail err">${esc(ex.message)}</div>`; }
+  }
+
+  // ---- loading the card for the open conversation ----
 
   async function load(request) {
     const mine = ++seq;
@@ -284,13 +624,17 @@ input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: -1p
     const emails = new Set();
     if (c.recipient && c.recipient.handle) emails.add(c.recipient.handle);
     let preview = c.blurb || "";
+    let replyTo = null;
     try {
       const list = await Promise.race([context.listMessages(), new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 2500))]);
       const messages = (list && list.results) || [];
       for (const m of messages) {
         for (const r of [m.from, m.replyTo, ...(m.to || []), ...(m.cc || [])]) if (r && r.handle) emails.add(r.handle);
       }
-      const firstInbound = messages.find((m) => m.status === "inbound") || messages[0];
+      const inbound = messages.filter((m) => m.status === "inbound");
+      const latest = [...inbound].sort((x, y) => new Date(x.date || 0) - new Date(y.date || 0)).pop();
+      replyTo = latest ? latest.id : null;
+      const firstInbound = inbound[0] || messages[0];
       if (firstInbound && firstInbound.content) {
         const body = firstInbound.content.type === "html" ? stripHtml(firstInbound.content.body) : firstInbound.content.body;
         preview = `${preview} ${body}`.slice(0, 4000);
@@ -299,7 +643,7 @@ input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: -1p
     const request = { subject: c.subject || "", preview, emails: [...emails].filter((h) => h.includes("@")) };
     const chosen = remembered(c.id);
     if (chosen) request.customer_id = chosen;
-    return request;
+    return { request, replyTo };
   }
 
   async function onContext(context) {
@@ -310,13 +654,14 @@ input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: -1p
     }
     if (context.type !== "singleConversation") {
       current = null;
-      app.innerHTML = `<p class="muted">${context.type === "multiConversations" ? "Select a single conversation" : "Open a conversation"} to see its QuickBooks account.</p>${searchBox()}`;
-      wireSearch();
+      setSource(null);
+      app.innerHTML = `<p class="muted">${context.type === "multiConversations" ? "Select a single conversation" : "Open a conversation"} to see its QuickBooks account.</p>${paymentFinder()}${searchBox()}`;
+      wireForms();
       return;
     }
-    const request = await fromConversation(context);
+    const { request, replyTo } = await fromConversation(context);
     if (frontContext !== context) return;
-    current = { conversationId: context.conversation.id, request };
+    current = { conversationId: context.conversation.id, request, replyTo, draftId: null };
     load(request);
   }
 
@@ -336,9 +681,9 @@ input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: -1p
       emails: params.getAll("email"),
     };
     if (params.get("customer_id")) request.customer_id = params.get("customer_id");
-    current = { conversationId: "test", request };
+    current = { conversationId: "test", request, replyTo: null, draftId: null };
     if (request.subject || request.preview || request.emails.length || request.customer_id) load(request);
-    else { app.innerHTML = `<p class="muted">Test mode: add &email=, &subject= or &customer_id= to the URL.</p>${searchBox()}`; wireSearch(); }
+    else { app.innerHTML = `<p class="muted">Test mode: add &email=, &subject= or &customer_id= to the URL.</p>${paymentFinder()}${searchBox()}`; wireForms(); }
   }, 1500);
 })();
 </script>
