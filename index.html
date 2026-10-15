@@ -98,6 +98,9 @@ details > summary::-webkit-details-marker { display: none; }
 <script>
 (function () {
   const API = "https://azvovuioadmulakatfwt.supabase.co/functions/v1/qbo-front-mcp/api";
+  // Run the function next to the database (us-east-2). Left alone, Supabase runs it near the
+  // caller (California for B4ALL), which doubled card times. A query parameter, so CORS is unchanged.
+  const REGION = "?forceFunctionRegion=us-east-2";
   const SUPPORT = "support@biometrics4all.com";
   const params = new URLSearchParams(location.search);
   const KEY = params.get("key") || window.QBO_SIDEBAR_KEY; // the second form is for local testing only
@@ -153,7 +156,7 @@ details > summary::-webkit-details-marker { display: none; }
     return h;
   }
   async function api(path, body) {
-    const res = await fetch(`${API}/${path}`, { method: "POST", headers: headers(), body: JSON.stringify(body) });
+    const res = await fetch(`${API}/${path}${REGION}`, { method: "POST", headers: headers(), body: JSON.stringify(body) });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `QuickBooks lookup failed (${res.status}).`);
     return data;
@@ -204,7 +207,7 @@ details > summary::-webkit-details-marker { display: none; }
   }
 
   async function pdfFile(kind, id, name) {
-    const res = await fetch(`${API}/pdf`, { method: "POST", headers: headers(), body: JSON.stringify({ kind, id }) });
+    const res = await fetch(`${API}/pdf${REGION}`, { method: "POST", headers: headers(), body: JSON.stringify({ kind, id }) });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.error || `Couldn't get the PDF (${res.status}).`);
@@ -615,17 +618,41 @@ details > summary::-webkit-details-marker { display: none; }
 
   // ---- loading the card for the open conversation ----
 
+  // Two requests race: the mirror answer (about a second) is shown first, marked "updating",
+  // and the live answer replaces it a few seconds later.
   async function load(request) {
     const mine = ++seq;
+    let liveDone = false;
+    let fastShown = false;
     loading("Looking up QuickBooks…");
+    api("card", { ...request, fast: true }).then((r) => {
+      // "No match" waits for the live answer, which also finds what was entered in the last few minutes.
+      if (mine !== seq || liveDone || r.state === "none") return;
+      render(r);
+      fastShown = true;
+      if (r.state === "matched" || r.state === "vendor") setUpdating();
+    }).catch(() => { /* the live request reports errors */ });
     try {
       const r = await api("card", request);
+      liveDone = true;
       if (mine === seq) render(r);
     } catch (ex) {
+      liveDone = true;
       if (mine !== seq) return;
+      if (fastShown) {
+        // Keep the mirror card this load already showed, and say live didn't come.
+        toast(`Live QuickBooks didn't load: ${ex.message}`, 5000);
+        if (card && card.state !== "choose") setSource({ kind: "mirror", as_of: card.data_as_of, reason: "the live lookup failed" });
+        return;
+      }
       app.innerHTML = `<p class="err">${esc(ex.message)}</p><button class="btn" id="retry">Try again</button>`;
       document.getElementById("retry").addEventListener("click", () => load(request));
     }
+  }
+
+  function setUpdating() {
+    asofEl.innerHTML = ` · <span class="dot"></span> Mirror · updating from QuickBooks…`;
+    srcNote.hidden = true;
   }
 
   const stripHtml = (html) => {
