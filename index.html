@@ -107,6 +107,8 @@ details > summary::-webkit-details-marker { display: none; }
   const toastEl = document.getElementById("toast");
   let frontContext = null;
   let current = null; // { conversationId, request, replyTo, draftId }
+  const draftIds = new Map(); // conversation id -> the reply draft this card started
+  const REF_PATTERN = /\b[A-Z]{2,12}\d{3,8}\b/g; // same rule as the server's extractRefs
   let card = null; // the last card shown
   let seq = 0;
 
@@ -171,16 +173,17 @@ details > summary::-webkit-details-marker { display: none; }
     const update = { updateMode: "insert" };
     if (text) update.content = { body: toHtml(text), type: "html" };
     if (files && files.length) update.attachments = files;
-    if (current && current.draftId) {
-      try { await frontContext.updateDraft(current.draftId, update); toast("Added to your reply."); return; }
-      catch { current.draftId = null; /* the draft was sent or discarded: start a new one */ }
+    const draftId = current && draftIds.get(current.conversationId);
+    if (draftId) {
+      try { await frontContext.updateDraft(draftId, update); toast("Added to your reply."); return; }
+      catch { draftIds.delete(current.conversationId); /* the draft was sent or discarded: start a new one */ }
     }
     const template = {};
     if (update.content) template.content = update.content;
     if (update.attachments) template.attachments = update.attachments;
     if (current && current.replyTo) template.replyOptions = { type: "reply", originalMessageId: current.replyTo };
     const draft = await frontContext.createDraft(template);
-    if (current && draft && draft.id) current.draftId = draft.id;
+    if (current && draft && draft.id) draftIds.set(current.conversationId, draft.id);
     toast("Reply drafted. Review it and send from Front.");
   }
 
@@ -360,8 +363,11 @@ details > summary::-webkit-details-marker { display: none; }
     const overdueCount = a.overdue_invoice_count || 0;
     const flags = (r.flags || []).map((f) => `<div class="flag">${esc(f)}</div>`).join("");
     const mentionedEstimates = new Set((r.mentions || []).filter((m) => m.kind === "estimate").map((m) => m.doc_number));
-    const mentions = (r.mentions || []).length
-      ? `<section><h3>Mentioned in this email</h3>${r.mentions.map(mentionRow).join("")}</section>` : "";
+    const missing = missingRefs(r);
+    const notInQbo = missing.length
+      ? `<div class="sub" style="margin-top:4px">Not in QuickBooks: ${esc(missing.join(", "))}. Fingerprint-fee and autopay invoices are in CMS / Thin Client.</div>` : "";
+    const mentions = (r.mentions || []).length || missing.length
+      ? `<section><h3>Mentioned in this email</h3>${(r.mentions || []).map(mentionRow).join("")}${notInQbo}</section>` : "";
     const invoices = (r.open_invoices || []).map(invoiceRow).join("");
     const more = (r.open_invoice_total || 0) > (r.open_invoices || []).length
       ? `<div class="small"><a href="#" data-url="${esc(a.qbo_url)}">${r.open_invoice_total - r.open_invoices.length} more in QuickBooks</a></div>` : "";
@@ -423,6 +429,15 @@ details > summary::-webkit-details-marker { display: none; }
       await addToReply(balanceText(r), files);
     }));
     wireForms();
+  }
+
+  // Document numbers in the email that QuickBooks doesn't have (usually CMS / Thin Client invoices).
+  function missingRefs(r) {
+    const req = (current && current.request) || {};
+    const found = new Set((r.mentions || []).map((m) => String(m.doc_number || "").toUpperCase()));
+    const refs = new Set();
+    for (const t of [req.subject, req.preview]) for (const m of String(t || "").toUpperCase().matchAll(REF_PATTERN)) refs.add(m[0]);
+    return [...refs].slice(0, 4).filter((x) => !found.has(x));
   }
 
   function renderVendor(r) {
@@ -661,8 +676,11 @@ details > summary::-webkit-details-marker { display: none; }
     }
     const { request, replyTo } = await fromConversation(context);
     if (frontContext !== context) return;
-    current = { conversationId: context.conversation.id, request, replyTo, draftId: null };
-    load(request);
+    // Front sends a new context on every change (a draft, a tag). Reload only when the
+    // conversation or what it's about changed.
+    const same = current && current.conversationId === context.conversation.id && JSON.stringify(current.request) === JSON.stringify(request);
+    current = { conversationId: context.conversation.id, request, replyTo };
+    if (!same) load(request);
   }
 
   document.getElementById("refresh").addEventListener("click", () => { if (current) load(current.request); });
